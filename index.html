@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Nhân Sự - TDT Studio</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Arial', sans-serif; }
+        .header { 
+            background-color: #1e3a8a; 
+            color: white; 
+            padding: 20px;
+            position: relative; 
+            display: flex; 
+            align-items: center; 
+            flex-wrap: wrap;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
+        }
+        .header img { 
+            height: 100px;
+            width: auto; 
+        }
+        .header-content { 
+            text-align: left; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+        }
+        .header h1 { 
+            margin-bottom: 5px; 
+            font-size: 1.5rem;
+            font-weight: bold; 
+        }
+        .header p { 
+            font-size: 1rem;
+            font-weight: bold; 
+            margin-bottom: 0;
+        }
+        .logout-btn { 
+            background: none; 
+            border: none; 
+            color: white; 
+            font-size: 16px;
+            cursor: pointer; 
+            position: absolute; 
+            top: 10px; 
+            right: 20px; 
+            padding: 5px 10px;
+        }
+        .logout-btn:hover { 
+            text-decoration: underline; 
+        }
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px 5px;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .header-left {
+                flex-direction: row;
+                gap: 5px;
+                flex: 1;
+            }
+            .header img {
+                height: 40px;
+            }
+            .header h1 {
+                font-size: 1rem;
+                margin: 0;
+            }
+            .header p {
+                font-size: 0.7rem;
+                display: none;
+            }
+            .logout-btn {
+                position: static;
+                font-size: 12px;
+                margin-left: auto;
+            }
+        }
+        .employee-card { margin-bottom: 15px; cursor: default; }
+        .employee-card:hover { background-color: #e9ecef; }
+        .employee-avatar { 
+            width: 100px;
+            height: 100px; 
+            border-radius: 50%; 
+            object-fit: cover; 
+            margin-bottom: 10px; 
+            border: 3px solid #000000;
+        }
+        footer { 
+            background-color: #1e3a8a; 
+            color: white; 
+            text-align: center; 
+            padding: 10px; 
+            margin-top: 20px; 
+        }
+        .search-section { margin: 20px 0; }
+        .btn-add-employee, .btn-update-profile { margin-bottom: 15px; margin-right: 10px; }
+        .main-content { display: none; }
+        .filter-section { display: flex; gap: 10px; align-items: center; }
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .filter-section .form-select {
+                max-width: 100%;
+            }
+            .employee-card .card-text { font-size: 0.85rem; }
+            .employee-avatar {
+                width: 80px;
+                height: 80px;
+                border: 2px solid #000000;
+            }
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #1e3a8a;
+            color: white;
+        }
+        .nav-tabs .nav-link {
+            color: #1e3a8a;
+        }
+        #employeeDetailsModal .employee-avatar { 
+            width: 180px;
+            height: 180px; 
+            border: 3px solid #000000;
+        }
+        @media (max-width: 768px) {
+            #employeeDetailsModal .employee-avatar {
+                width: 120px;
+                height: 120px;
+                border: 2px solid #000000;
+            }
+        }
+        #image-preview, #profile-preview { 
+            max-width: 200px; 
+            display: none; 
+            margin-top: 0.5rem; 
+            border-radius: 50%; 
+            border: 3px solid #000000;
+        }
+        .employee-card .action-btns { margin-top: 10px; text-align: center; }
+        .employee-card .action-btns button { margin: 0 2px; padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+        .employee-info { font-size: 0.9rem; margin-bottom: 5px; }
+        .modal { z-index: 1055; }
+        .empty-list { text-align: center; padding: 40px; color: #6c757d; }
+        .login-modal { z-index: 1060; }
+        .toast { z-index: 1070; }
+        .welcome-message { margin-bottom: 15px; font-size: 1.2rem; font-weight: bold; color: #1e3a8a; }
+    </style>
+</head>
+<body>
+    <!-- Modal Đăng Nhập -->
+    <div class="modal fade login-modal" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Đăng Nhập - TDT Studio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" placeholder="email@tdtstudio.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Mật Khẩu</label>
+                            <input type="password" class="form-control" id="loginPassword" placeholder="Nhập mật khẩu" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Đăng Nhập</button>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Liên hệ admin để được cấp tài khoản</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cập Nhật Thông Tin Cá Nhân -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">Cập Nhật Thông Tin Cá Nhân</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="profileForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="profileEmployeeId" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="profilePhone" class="form-label">SĐT</label>
+                                <input type="tel" class="form-control" id="profilePhone">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="profileHometown" class="form-label">Quê Quán</label>
+                                <input type="text" class="form-control" id="profileHometown">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="profileHobbies" class="form-label">Sở Thích</label>
+                                <input type="text" class="form-control" id="profileHobbies">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="profileSocialMedia" class="form-label">Mạng Xã Hội</label>
+                                <input type="url" class="form-control" id="profileSocialMedia" placeholder="https://...">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="profileAvatar" class="form-label">Ảnh Đại Diện</label>
+                                <input type="file" class="form-control" id="profileAvatar" accept="image/jpeg,image/png">
+                                <img id="profile-preview" src="./images/macdinh.png" alt="Preview" style="max-width: 200px; display: none; margin-top: 0.5rem; border-radius: 50%;">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="profilePassword" class="form-label">Mật Khẩu Mới (để trống nếu không đổi)</label>
+                                <input type="password" class="form-control" id="profilePassword" placeholder="Nhập mật khẩu mới">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="profileDescription" class="form-label">Miêu Tả Đôi Nét</label>
+                                <textarea class="form-control" id="profileDescription" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu Thông Tin</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thông Tin Chi Tiết Nhân Viên -->
+    <div class="modal fade" id="employeeDetailsModal" tabindex="-1" aria-labelledby="employeeDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeDetailsModalLabel">Thông Tin Chi Tiết Nhân Viên</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="detailsAvatar"></div>
+                    <h5 id="detailsName" class="mt-3"></h5>
+                    <p><strong>Mã NV:</strong> <span id="detailsCode"></span></p>
+                    <p><strong>Email:</strong> <span id="detailsEmail"></span></p>
+                    <p><strong>Chức Vụ:</strong> <span id="detailsPosition"></span></p>
+                    <p><strong>SĐT:</strong> <span id="detailsPhone"></span></p>
+                    <p><strong>Quê Quán:</strong> <span id="detailsHometown"></span></p>
+                    <p><strong>Sở Thích:</strong> <span id="detailsHobbies"></span></p>
+                    <p><strong>Mạng Xã Hội:</strong> <span id="detailsSocialMedia"></span></p>
+                    <p><strong>Miêu Tả:</strong> <span id="detailsDescription"></span></p>
+                    <p id="detailsSalary" style="display: none;"><strong>Lương Cơ Bản:</strong> <span id="detailsSalaryValue"></span></p>
+                    <p><strong>Trạng thái tài khoản:</strong> <span id="detailsAccountStatus"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-warning" id="editFromDetailsBtn">Sửa</button>
+                    <button type="button" class="btn btn-success" id="createAccountBtn" style="display: none;">Cung cấp tài khoản</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Thêm/Sửa Nhân Viên -->
+    <div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeModalLabel">Thêm Nhân Viên Mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="employeeForm">
+                    <div class="modal-body">
+                        <input type="hidden" id="editId" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="code" class="form-label">Mã NV</label>
+                                <input type="text" class="form-control" id="code" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Họ Tên</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="position" class="form-label">Chức Vụ</label>
+                                <select class="form-select" id="position" required>
+                                    <option value="">Chọn chức vụ</option>
+                                    <option value="Giám đốc điều hành (CEO)">Giám đốc điều hành (CEO)</option>
+                                    <option value="Kế Toán">Kế Toán</option>
+                                    <option value="Web Developer">Web Developer</option>
+                                    <option value="Mobile App Developer">Mobile App Developer</option>
+                                    <option value="Game Developer">Game Developer</option>
+                                    <option value="UI/UX Designer">UI/UX Designer</option>
+                                    <option value="Project Manager">Project Manager</option>
+                                    <option value="AI Specialist">AI Specialist</option>
+                                    <option value="Bảo vệ">Bảo vệ</option>
+                                    <option value="Lao Công">Lao Công</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">SĐT</label>
+                                <input type="tel" class="form-control" id="phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="salary" class="form-label">Lương Cơ Bản (VND)</label>
+                                <input type="number" class="form-control" id="salary" min="0" step="1000">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="hometown" class="form-label">Quê Quán</label>
+                                <input type="text" class="form-control" id="hometown">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="hobbies" class="form-label">Sở Thích</label>
+                                <input type="text" class="form-control" id="hobbies">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="socialMedia" class="form-label">Mạng Xã Hội</label>
+                                <input type="url" class="form-control" id="socialMedia" placeholder="https://...">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="avatar" class="form-label">Ảnh Nhân Viên</label>
+                                <input type="file" class="form-control" id="avatar" accept="image/jpeg,image/png">
+                                <img id="image-preview" src="./images/macdinh.png" alt="Preview" style="max-width: 200px; display: none; margin-top: 0.5rem; border-radius: 50%;">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <label for="description" class="form-label">Miêu Tả Đôi Nét</label>
+                                <textarea class="form-control" id="description" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu Nhân Viên</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header main-content">
+            <div class="header-left">
+                <img src="logo.png" alt="TDT Studio Logo" onerror="this.style.display='none'">
+                <div class="header-content">
+                    <h1>Quản Lý Nhân Sự TDT Studio</h1>
+                    <p>Giải pháp công nghệ: Website, App, Game & AI</p>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()" id="logoutBtn" style="display: none;">Đăng xuất</button>
+        </div>
+
+        <!-- Danh Sách Nhân Viên -->
+        <div class="card main-content" id="mainCard">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h3>Danh Sách Nhân Viên</h3>
+                <div>
+                    <button type="button" class="btn btn-primary btn-add-employee" data-bs-toggle="modal" data-bs-target="#employeeModal" onclick="openAddModal();">
+                        <i class="bi bi-plus"></i> Thêm Nhân Viên
+                    </button>
+                    <button type="button" class="btn btn-info btn-update-profile" data-bs-toggle="modal" data-bs-target="#profileModal" onclick="openProfileModal();">
+                        <i class="bi bi-person"></i> Cập Nhật Thông Tin
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <h4 id="welcomeMessage" class="welcome-message" style="display: none;"></h4>
+                <div class="search-section">
+                    <div class="filter-section">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Tìm theo tên hoặc mã NV...">
+                        </div>
+                        <select class="form-select" id="positionFilter" style="max-width: 200px;">
+                            <option value="">Tất cả chức vụ</option>
+                            <option value="Giám đốc điều hành (CEO)">Giám đốc điều hành (CEO)</option>
+                            <option value="Kế Toán">Kế Toán</option>
+                            <option value="Web Developer">Web Developer</option>
+                            <option value="Mobile App Developer">Mobile App Developer</option>
+                            <option value="Game Developer">Game Developer</option>
+                            <option value="UI/UX Designer">UI/UX Designer</option>
+                            <option value="Project Manager">Project Manager</option>
+                            <option value="AI Specialist">AI Specialist</option>
+                            <option value="Bảo vệ">Bảo vệ</option>
+                            <option value="Lao Công">Lao Công</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="employeeList" class="row"></div>
+                <div id="emptyMessage" class="empty-list" style="display: none;">
+                    <h5>Chưa có nhân viên nào. Hãy thêm nhân viên mới!</h5>
+                    <button class="btn btn-primary" onclick="openAddModal();">Thêm ngay</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer main-content">
+            <footer>
+                <p>&copy; 2025 TDT Studio - Giải pháp công nghệ Việt Nam</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <!-- Custom JS -->
+    <script>
+        let employees = JSON.parse(localStorage.getItem('tdt-employees')) || [];
+        let userAccounts = JSON.parse(localStorage.getItem('tdt-user-accounts')) || [];
+        let currentProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+        let isLoggedIn = false;
+        let currentUser = null;
+        const DEFAULT_AVATAR = './images/macdinh.png';
+        const FALLBACK_AVATAR = 'https://via.placeholder.com/80';
+        const ADMIN_EMAIL = 'admin@tdtstudio.com';
+        const ADMIN_PASSWORD = 'admin123';
+        const DEFAULT_EMPLOYEE_PASSWORD = 'Thien0108%';
+
+        // Hàm đóng modal an toàn
+        function closeModal(modalElement) {
+            console.log('Attempting to close modal:', modalElement.id);
+            try {
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                } else {
+                    console.warn('No modal instance found for:', modalElement.id);
+                    new bootstrap.Modal(modalElement).hide();
+                }
+                // Đợi sự kiện modal đóng hoàn tất
+                modalElement.addEventListener('hidden.bs.modal', function handler() {
+                    modalElement.classList.remove('show', 'd-block');
+                    modalElement.setAttribute('aria-hidden', 'true');
+                    modalElement.style.display = 'none';
+                    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    console.log('Modal closed successfully:', modalElement.id);
+                    // Xóa sự kiện để tránh lặp
+                    modalElement.removeEventListener('hidden.bs.modal', handler);
+                }, { once: true });
+            } catch (error) {
+                console.error('Lỗi khi đóng modal:', error);
+                showToast('Đã xảy ra lỗi khi đóng modal!', 'bg-danger');
+                // Dọn dẹp thủ công nếu lỗi
+                modalElement.classList.remove('show', 'd-block');
+                modalElement.setAttribute('aria-hidden', 'true');
+                modalElement.style.display = 'none';
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            }
+        }
+
+        // Hiển thị modal đăng nhập
+        function showLoginModal() {
+            console.log('Showing login modal');
+            const loginModal = document.getElementById('loginModal');
+            document.querySelectorAll('.main-content').forEach(el => el.style.display = 'none');
+            try {
+                const modalInstance = new bootstrap.Modal(loginModal, { backdrop: 'static', keyboard: false });
+                modalInstance.show();
+                console.log('Login modal shown successfully');
+            } catch (error) {
+                console.error('Lỗi khi hiển thị login modal:', error);
+                showToast('Không thể hiển thị modal đăng nhập!', 'bg-danger');
+                loginModal.classList.add('show');
+                loginModal.setAttribute('aria-hidden', 'false');
+                loginModal.style.display = 'block';
+            }
+        }
+
+        // Hiển thị nội dung chính và lời chào
+        function showMainContent() {
+            console.log('Attempting to show main content, currentUser:', currentUser);
+            try {
+                if (!currentUser) {
+                    throw new Error('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+                }
+                const loginModal = document.getElementById('loginModal');
+                closeModal(loginModal);
+                document.querySelectorAll('.main-content').forEach(el => {
+                    el.style.display = 'block';
+                    console.log('Displayed main-content:', el.className);
+                });
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('mainCard').style.display = 'block';
+                // Hiển thị/ẩn nút "Thêm Nhân Viên" dựa trên vai trò
+                const addEmployeeBtn = document.getElementById('mainCard').querySelector('.btn-add-employee');
+                if (currentUser && currentUser.role === 'admin') {
+                    addEmployeeBtn.style.display = 'inline-block';
+                } else {
+                    addEmployeeBtn.style.display = 'none';
+                }
+                // Hiển thị lời chào
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const emp = employees.find(e => e.email === currentUser.email);
+                welcomeMessage.textContent = `Xin Chào ${emp ? emp.name : currentUser.email}`;
+                welcomeMessage.style.display = 'block';
+                console.log('Welcome message set:', welcomeMessage.textContent);
+                renderEmployees(employees);
+            } catch (error) {
+                console.error('Lỗi khi hiển thị nội dung chính:', error);
+                showToast('Đã xảy ra lỗi, vui lòng đăng nhập lại!', 'bg-danger');
+                logout();
+            }
+        }
+
+        // Đăng nhập
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('Login form submitted');
+            try {
+                const email = document.getElementById('loginEmail').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                console.log('Login attempt with email:', email);
+                let isValid = false;
+                let role = '';
+
+                if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                    isValid = true;
+                    role = 'admin';
+                    console.log('Admin login successful');
+                } else {
+                    const user = userAccounts.find(u => u.email === email && u.password === password);
+                    if (user) {
+                        isValid = true;
+                        role = 'employee';
+                        console.log('Employee login successful');
+                    }
+                }
+
+                if (isValid) {
+                    currentUser = { email, role };
+                    try {
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        console.log('Stored currentUser:', currentUser);
+                    } catch (error) {
+                        console.error('Lỗi khi lưu vào localStorage:', error);
+                        showToast('Lỗi lưu trữ dữ liệu, vui lòng thử lại!', 'bg-danger');
+                        return;
+                    }
+                    isLoggedIn = true;
+                    document.getElementById('loginForm').reset();
+                    showMainContent();
+                    setTimeout(() => showToast(`Đăng nhập thành công với vai trò ${role === 'admin' ? 'Admin' : 'Nhân viên'}!`, 'bg-success'), 100);
+                } else {
+                    console.log('Invalid login credentials');
+                    showToast('Email hoặc mật khẩu không đúng!', 'bg-danger');
+                }
+            } catch (error) {
+                console.error('Lỗi khi đăng nhập:', error);
+                showToast('Đã xảy ra lỗi, vui lòng thử lại!', 'bg-danger');
+            }
+        });
+
+        // Đăng xuất
+        function logout() {
+            console.log('Logging out');
+            try {
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('currentUser');
+                isLoggedIn = false;
+                currentUser = null;
+                document.getElementById('loginForm').reset();
+                document.getElementById('welcomeMessage').style.display = 'none';
+                showLoginModal();
+                setTimeout(() => showToast('Đã đăng xuất!', 'bg-info'), 100);
+            } catch (error) {
+                console.error('Lỗi khi đăng xuất:', error);
+                showToast('Đã xảy ra lỗi, vui lòng thử lại!', 'bg-danger');
+            }
+        }
+
+        // Render danh sách nhân viên
+        function renderEmployees(data) {
+            console.log('Rendering employees:', data);
+            const list = document.getElementById('employeeList');
+            const emptyMsg = document.getElementById('emptyMessage');
+            list.innerHTML = '';
+            if (!data || data.length === 0) {
+                emptyMsg.style.display = 'block';
+                emptyMsg.innerHTML = `
+                    <h5>Không tìm thấy nhân viên nào.</h5>
+                    ${currentUser && currentUser.role === 'admin' ? '<button class="btn btn-primary" onclick="openAddModal();">Thêm nhân viên</button>' : ''}
+                `;
+                console.log('No employees found');
+                return;
+            }
+            emptyMsg.style.display = 'none';
+            const fragment = document.createDocumentFragment();
+            data.forEach(emp => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4 col-sm-6';
+                const salaryText = emp.salary ? emp.salary.toLocaleString() + ' VND' : 'Chưa có';
+                col.innerHTML = `
+                    <div class="card employee-card">
+                        <div class="card-body text-center">
+                            <img src="${emp.avatar || DEFAULT_AVATAR}" class="employee-avatar" alt="${emp.name}" onerror="this.src='${FALLBACK_AVATAR}';">
+                            <div class="employee-info">
+                                <p class="card-text"><strong>Mã NV:</strong> ${emp.code}</p>
+                                <p class="card-text"><strong>Tên:</strong> ${emp.name}</p>
+                                <p class="card-text"><strong>Email:</strong> ${emp.email}</p>
+                                <p class="card-text"><strong>Chức vụ:</strong> ${emp.position}</p>
+                                <p class="card-text"><strong>SĐT:</strong> ${emp.phone || 'Chưa có'}</p>
+                                ${currentUser && currentUser.role === 'admin' ? `<p class="card-text"><strong>Lương CB:</strong> ${salaryText}</p>` : ''}
+                            </div>
+                            <div class="action-btns">
+                                <button class="btn btn-info btn-sm" onclick="showDetails('${emp.code}');">Chi Tiết</button>
+                                ${currentUser && currentUser.role === 'admin' ? `
+                                    <button class="btn btn-warning btn-sm" onclick="editCurrentEmployee('${emp.code}');">Sửa</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteEmployee('${emp.code}');">Xóa</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                fragment.appendChild(col);
+            });
+            list.appendChild(fragment);
+            console.log('Employee list rendered');
+        }
+
+        // Tìm kiếm và lọc nhân viên
+        function filterEmployees() {
+            const search = document.getElementById('searchInput').value.trim().toLowerCase();
+            const position = document.getElementById('positionFilter').value;
+            console.log('Filtering with search:', search, 'and position:', position);
+            const filtered = employees.filter(emp => {
+                const empPosition = emp.position || '';
+                const matchesSearch = search === '' || 
+                                     emp.name.toLowerCase().includes(search) || 
+                                     emp.code.toLowerCase().includes(search);
+                const matchesPosition = position === '' || empPosition === position;
+                return matchesSearch && matchesPosition;
+            });
+            const emptyMsg = document.getElementById('emptyMessage');
+            if (filtered.length === 0) {
+                emptyMsg.style.display = 'block';
+                emptyMsg.innerHTML = `
+                    <h5>Không tìm thấy nhân viên nào${position ? ' với chức vụ "' + position + '"' : ''}${search ? ' và từ khóa "' + search + '"' : ''}.</h5>
+                    ${currentUser && currentUser.role === 'admin' ? '<button class="btn btn-primary" onclick="openAddModal();">Thêm nhân viên</button>' : ''}
+                `;
+            } else {
+                emptyMsg.style.display = 'none';
+            }
+            renderEmployees(filtered);
+        }
+
+        // Gắn sự kiện tìm kiếm và lọc
+        document.getElementById('searchInput').addEventListener('input', filterEmployees);
+        document.getElementById('positionFilter').addEventListener('change', filterEmployees);
+
+        // Mở modal thêm nhân viên
+        function openAddModal() {
+            console.log('Opening add employee modal');
+            document.getElementById('employeeModalLabel').textContent = 'Thêm Nhân Viên Mới';
+            document.getElementById('employeeForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('code').value = 'NV' + (employees.length + 1).toString().padStart(3, '0');
+            const imagePreview = document.getElementById('image-preview');
+            imagePreview.src = DEFAULT_AVATAR;
+            imagePreview.style.display = 'none';
+            try {
+                const modalInstance = new bootstrap.Modal(document.getElementById('employeeModal'), { backdrop: 'static', keyboard: false });
+                modalInstance.show();
+                console.log('Employee modal opened successfully');
+            } catch (error) {
+                console.error('Lỗi khi mở modal thêm nhân viên:', error);
+                showToast('Không thể mở modal thêm nhân viên!', 'bg-danger');
+            }
+        }
+
+        // Lưu nhân viên
+        document.getElementById('employeeForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('Employee form submitted');
+            try {
+                const id = document.getElementById('editId').value;
+                const imagePreview = document.getElementById('image-preview');
+                const empData = {
+                    code: document.getElementById('code').value,
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    position: document.getElementById('position').value,
+                    phone: document.getElementById('phone').value,
+                    salary: parseInt(document.getElementById('salary').value) || 0,
+                    hometown: document.getElementById('hometown').value,
+                    hobbies: document.getElementById('hobbies').value,
+                    socialMedia: document.getElementById('socialMedia').value,
+                    description: document.getElementById('description').value,
+                    avatar: imagePreview.src === DEFAULT_AVATAR ? '' : imagePreview.src
+                };
+                const employeeModal = document.getElementById('employeeModal');
+                closeModal(employeeModal);
+                if (id) {
+                    const index = employees.findIndex(emp => emp.code === id);
+                    if (index !== -1) {
+                        employees[index] = empData;
+                        console.log('Updated employee:', empData);
+                    }
+                    setTimeout(() => showToast('Cập nhật thành công!', 'bg-success'), 100);
+                } else {
+                    employees.push(empData);
+                    console.log('Added new employee:', empData);
+                    setTimeout(() => showToast('Thêm thành công!', 'bg-success'), 100);
+                }
+                localStorage.setItem('tdt-employees', JSON.stringify(employees));
+                document.getElementById('employeeForm').reset();
+                imagePreview.src = DEFAULT_AVATAR;
+                imagePreview.style.display = 'none';
+                renderEmployees(employees);
+                // Cập nhật lời chào nếu người dùng hiện tại bị ảnh hưởng
+                if (currentUser && currentUser.email === empData.email) {
+                    const welcomeMessage = document.getElementById('welcomeMessage');
+                    welcomeMessage.textContent = `Xin Chào ${empData.name}`;
+                    welcomeMessage.style.display = 'block';
+                    console.log('Updated welcome message:', welcomeMessage.textContent);
+                }
+            } catch (error) {
+                console.error('Lỗi khi lưu nhân viên:', error);
+                showToast('Đã xảy ra lỗi, vui lòng thử lại!', 'bg-danger');
+            }
+        });
+
+        // Hàm hiển thị toast
+        function showToast(message, bgClass) {
+            console.log('Showing toast:', message);
+            const existingToasts = document.querySelectorAll('.toast');
+            existingToasts.forEach(toast => toast.remove());
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white ${bgClass} border-0`;
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            try {
+                new bootstrap.Toast(toast).show();
+            } catch (error) {
+                console.error('Lỗi khi hiển thị toast:', error);
+            }
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Preview ảnh nhân viên
+        document.getElementById('avatar').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast('Ảnh quá lớn, vui lòng chọn ảnh dưới 2MB!', 'bg-danger');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('image-preview').src = e.target.result;
+                    document.getElementById('image-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Chi tiết nhân viên
+        function showDetails(code) {
+            console.log('Showing details for employee code:', code);
+            const emp = employees.find(e => e.code === code);
+            if (emp) {
+                document.getElementById('detailsAvatar').innerHTML = `<img src="${emp.avatar || DEFAULT_AVATAR}" class="employee-avatar" alt="${emp.name}" onerror="this.src='${FALLBACK_AVATAR}';">`;
+                document.getElementById('detailsName').textContent = emp.name;
+                document.getElementById('detailsCode').textContent = emp.code;
+                document.getElementById('detailsEmail').textContent = emp.email;
+                document.getElementById('detailsPosition').textContent = emp.position;
+                document.getElementById('detailsPhone').textContent = emp.phone || 'Chưa có';
+                document.getElementById('detailsHometown').textContent = emp.hometown || 'Chưa có';
+                document.getElementById('detailsHobbies').textContent = emp.hobbies || 'Chưa có';
+                document.getElementById('detailsSocialMedia').innerHTML = emp.socialMedia ? `<a href="${emp.socialMedia}" target="_blank">${emp.socialMedia}</a>` : 'Chưa có';
+                document.getElementById('detailsDescription').textContent = emp.description || 'Chưa có';
+                const salaryElement = document.getElementById('detailsSalary');
+                const salaryValueElement = document.getElementById('detailsSalaryValue');
+                const canViewSalary = currentUser && (currentUser.role === 'admin' || emp.email === currentUser.email);
+                salaryValueElement.textContent = emp.salary ? emp.salary.toLocaleString() + ' VND' : 'Chưa có';
+                salaryElement.style.display = canViewSalary && emp.salary ? 'block' : 'none';
+                const accountStatus = userAccounts.find(u => u.email === emp.email) ? 'Đã có tài khoản' : 'Chưa có tài khoản';
+                document.getElementById('detailsAccountStatus').textContent = accountStatus;
+                document.getElementById('createAccountBtn').style.display = accountStatus === 'Chưa có tài khoản' && currentUser && currentUser.role === 'admin' ? 'inline-block' : 'none';
+                document.getElementById('editFromDetailsBtn').style.display = currentUser && currentUser.role === 'admin' ? 'inline-block' : 'none';
+                document.getElementById('createAccountBtn').onclick = () => createEmployeeAccount(emp.email, emp.code);
+                try {
+                    const modalInstance = new bootstrap.Modal(document.getElementById('employeeDetailsModal'), { backdrop: 'static', keyboard: false });
+                    modalInstance.show();
+                    console.log('Employee details modal opened successfully');
+                } catch (error) {
+                    console.error('Lỗi khi mở modal chi tiết:', error);
+                    showToast('Không thể mở modal chi tiết!', 'bg-danger');
+                }
+            }
+        }
+
+        // Tạo tài khoản nhân viên
+        function createEmployeeAccount(email, code) {
+            console.log('Creating account for email:', email);
+            try {
+                if (userAccounts.find(u => u.email === email)) {
+                    showToast('Tài khoản đã tồn tại cho email này!', 'bg-warning');
+                    return;
+                }
+                userAccounts.push({
+                    email: email,
+                    password: DEFAULT_EMPLOYEE_PASSWORD,
+                    role: 'employee'
+                });
+                localStorage.setItem('tdt-user-accounts', JSON.stringify(userAccounts));
+                const employeeDetailsModal = document.getElementById('employeeDetailsModal');
+                closeModal(employeeDetailsModal);
+                setTimeout(() => showToast(`Tài khoản cho ${email} đã được tạo với mật khẩu mặc định: ${DEFAULT_EMPLOYEE_PASSWORD}`, 'bg-success'), 100);
+                renderEmployees(employees);
+            } catch (error) {
+                console.error('Lỗi khi tạo tài khoản:', error);
+                showToast('Đã xảy ra lỗi khi tạo tài khoản!', 'bg-danger');
+            }
+        }
+
+        // Sửa nhân viên từ card
+        function editCurrentEmployee(code) {
+            console.log('Editing employee with code:', code);
+            const emp = employees.find(e => e.code === code);
+            if (emp) {
+                document.getElementById('employeeModalLabel').textContent = 'Sửa Nhân Viên';
+                document.getElementById('editId').value = emp.code;
+                document.getElementById('code').value = emp.code;
+                document.getElementById('name').value = emp.name;
+                document.getElementById('email').value = emp.email;
+                document.getElementById('position').value = emp.position;
+                document.getElementById('phone').value = emp.phone || '';
+                document.getElementById('salary').value = emp.salary || '';
+                document.getElementById('hometown').value = emp.hometown || '';
+                document.getElementById('hobbies').value = emp.hobbies || '';
+                document.getElementById('socialMedia').value = emp.socialMedia || '';
+                document.getElementById('description').value = emp.description || '';
+                const imagePreview = document.getElementById('image-preview');
+                if (emp.avatar) {
+                    imagePreview.src = emp.avatar;
+                    imagePreview.style.display = 'block';
+                } else {
+                    imagePreview.src = DEFAULT_AVATAR;
+                    imagePreview.style.display = 'none';
+                }
+                try {
+                    const modalInstance = new bootstrap.Modal(document.getElementById('employeeModal'), { backdrop: 'static', keyboard: false });
+                    modalInstance.show();
+                    console.log('Edit employee modal opened successfully');
+                } catch (error) {
+                    console.error('Lỗi khi mở modal chỉnh sửa:', error);
+                    showToast('Không thể mở modal chỉnh sửa!', 'bg-danger');
+                }
+            }
+        }
+
+        // Sửa từ chi tiết modal
+        document.getElementById('editFromDetailsBtn').addEventListener('click', function() {
+            const code = document.getElementById('detailsCode').textContent;
+            const employeeDetailsModal = document.getElementById('employeeDetailsModal');
+            closeModal(employeeDetailsModal);
+            editCurrentEmployee(code);
+        });
+
+        // Xóa nhân viên
+        function deleteEmployee(code) {
+            console.log('Deleting employee with code:', code);
+            if (confirm('Bạn có chắc chắn muốn xóa nhân viên ' + code + '?')) {
+                employees = employees.filter(emp => emp.code !== code);
+                userAccounts = userAccounts.filter(u => u.email !== employees.find(emp => emp.code === code)?.email);
+                localStorage.setItem('tdt-employees', JSON.stringify(employees));
+                localStorage.setItem('tdt-user-accounts', JSON.stringify(userAccounts));
+                setTimeout(() => showToast('Xóa thành công!', 'bg-success'), 100);
+                renderEmployees(employees);
+            }
+        }
+
+        // Mở modal profile
+        function openProfileModal() {
+            console.log('Opening profile modal');
+            if (!currentUser) {
+                showToast('Vui lòng đăng nhập lại!', 'bg-danger');
+                logout();
+                return;
+            }
+            const emp = employees.find(e => e.email === currentUser.email) || {};
+            document.getElementById('profileEmployeeId').value = currentUser.email || 'user';
+            document.getElementById('profilePhone').value = emp.phone || currentProfile.phone || '';
+            document.getElementById('profileHometown').value = emp.hometown || currentProfile.hometown || '';
+            document.getElementById('profileHobbies').value = emp.hobbies || currentProfile.hobbies || '';
+            document.getElementById('profileSocialMedia').value = emp.socialMedia || currentProfile.socialMedia || '';
+            document.getElementById('profileDescription').value = emp.description || currentProfile.description || '';
+            document.getElementById('profilePassword').value = '';
+            const profilePreview = document.getElementById('profile-preview');
+            if (emp.avatar || currentProfile.avatar) {
+                profilePreview.src = emp.avatar || currentProfile.avatar;
+                profilePreview.style.display = 'block';
+            } else {
+                profilePreview.src = DEFAULT_AVATAR;
+                profilePreview.style.display = 'none';
+            }
+            try {
+                const modalInstance = new bootstrap.Modal(document.getElementById('profileModal'), { backdrop: 'static', keyboard: false });
+                modalInstance.show();
+                console.log('Profile modal opened successfully');
+            } catch (error) {
+                console.error('Lỗi khi mở modal profile:', error);
+                showToast('Không thể mở modal profile!', 'bg-danger');
+            }
+        }
+
+        // Lưu profile
+        document.getElementById('profileForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log('Profile form submitted');
+            try {
+                if (!currentUser) {
+                    throw new Error('Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+                }
+                const profilePreview = document.getElementById('profile-preview');
+                const newPassword = document.getElementById('profilePassword').value;
+                if (newPassword) {
+                    const userIndex = userAccounts.findIndex(u => u.email === currentUser.email);
+                    if (userIndex !== -1) {
+                        userAccounts[userIndex].password = newPassword;
+                        localStorage.setItem('tdt-user-accounts', JSON.stringify(userAccounts));
+                        console.log('Updated user password for:', currentUser.email);
+                    }
+                }
+                if (currentUser.role === 'employee') {
+                    const empIndex = employees.findIndex(e => e.email === currentUser.email);
+                    if (empIndex !== -1) {
+                        employees[empIndex].phone = document.getElementById('profilePhone').value;
+                        employees[empIndex].hometown = document.getElementById('profileHometown').value;
+                        employees[empIndex].hobbies = document.getElementById('profileHobbies').value;
+                        employees[empIndex].socialMedia = document.getElementById('profileSocialMedia').value;
+                        employees[empIndex].description = document.getElementById('profileDescription').value;
+                        employees[empIndex].avatar = profilePreview.src === DEFAULT_AVATAR ? '' : profilePreview.src;
+                        localStorage.setItem('tdt-employees', JSON.stringify(employees));
+                        console.log('Updated employee profile:', employees[empIndex]);
+                    }
+                } else {
+                    currentProfile = {
+                        phone: document.getElementById('profilePhone').value,
+                        hometown: document.getElementById('profileHometown').value,
+                        hobbies: document.getElementById('profileHobbies').value,
+                        socialMedia: document.getElementById('profileSocialMedia').value,
+                        description: document.getElementById('profileDescription').value,
+                        avatar: profilePreview.src === DEFAULT_AVATAR ? '' : profilePreview.src
+                    };
+                    localStorage.setItem('userProfile', JSON.stringify(currentProfile));
+                    console.log('Updated admin profile:', currentProfile);
+                }
+                const profileModal = document.getElementById('profileModal');
+                closeModal(profileModal);
+                document.getElementById('profileForm').reset();
+                profilePreview.src = DEFAULT_AVATAR;
+                profilePreview.style.display = 'none';
+                setTimeout(() => showToast('Cập nhật thông tin thành công!', 'bg-success'), 100);
+                renderEmployees(employees);
+                // Cập nhật lại lời chào
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                const emp = employees.find(e => e.email === currentUser.email);
+                welcomeMessage.textContent = `Xin Chào ${emp ? emp.name : currentUser.email}`;
+                welcomeMessage.style.display = 'block';
+                console.log('Updated welcome message:', welcomeMessage.textContent);
+            } catch (error) {
+                console.error('Lỗi khi lưu profile:', error);
+                showToast('Đã xảy ra lỗi, vui lòng đăng nhập lại!', 'bg-danger');
+                logout();
+            }
+        });
+
+        // Preview ảnh profile
+        document.getElementById('profileAvatar').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    showToast('Ảnh quá lớn, vui lòng chọn ảnh dưới 2MB!', 'bg-danger');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('profile-preview').src = e.target.result;
+                    document.getElementById('profile-preview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Khởi tạo trang
+        window.onload = () => {
+            console.log('Page loaded, resetting login state');
+            try {
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    console.log('Found previous session, clearing it');
+                    showToast('Phiên đăng nhập cũ đã được xóa, vui lòng đăng nhập lại!', 'bg-info');
+                }
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('currentUser');
+            } catch (error) {
+                console.error('Lỗi khi xóa localStorage:', error);
+            }
+            isLoggedIn = false;
+            currentUser = null;
+            showLoginModal();
+        };
+
+        // Xử lý sự kiện đóng modal
+        ['profileModal', 'employeeDetailsModal', 'employeeModal', 'loginModal'].forEach(modalId => {
+            const modalElement = document.getElementById(modalId);
+            const closeButtons = modalElement.querySelectorAll('.btn-close, [data-bs-dismiss="modal"]');
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    closeModal(modalElement);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
